@@ -14,14 +14,6 @@ jobs:
 
       - name: Setup JQ
         run: sudo apt-get install -y jq
-
-      - name: Install GitHub CLI
-        run: |
-            sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-            sudo apt-add-repository https://cli.github.com/packages
-            sudo apt update
-            sudo apt install gh -y
-
       - name: Optimize Code
         run: |
           # Fetch source branch name
@@ -52,6 +44,5 @@ jobs:
           git config --global user.name "GitHub Action Bot"
           git commit -am "Optimized code"
           git push origin optimized-${branch_name}
-
-    env:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
