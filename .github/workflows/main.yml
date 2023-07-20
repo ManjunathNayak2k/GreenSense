@@ -22,6 +22,7 @@ jobs:
         with:
           script: |
             const { owner, repo, number } = context.issue;
+            const { request } = require('@octokit/request');
 
             // Get the list of files changed in the PR
             const { data: files } = await github.rest.pulls.listFiles({
@@ -36,13 +37,12 @@ jobs:
               const fileContent = fs.readFileSync(file.filename, 'utf8');
 
               // Use the built-in fetch function
-              const response = await fetch('https://dummyjson.com/products/add', {
+              const { data } = await request('POST https://dummyjson.com/products/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
               });
 
-              const data = await response.json();
 
               // Assuming the API returns the entire new content of the file
               const newContent = data.content;
