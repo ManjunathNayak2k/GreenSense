@@ -44,10 +44,10 @@ jobs:
                 // body: JSON.stringify({ content: 'hi' , explanation: 'mock explanation'})
                 body: JSON.stringify({ "title": "mock"})
               });
-
+              console.log(JSON.stringify({ "title": "mock"}))
               // Assuming the API returns the entire new content of the file
               // change response.data.id to appropriate later
-              const newContent = response.data.id;
+              const newContent = response.data;
 
               console.log("response:");
               console.log(newContent);
