@@ -49,14 +49,14 @@ jobs:
               });
               // Assuming the API returns the entire new content of the file
               // change response.data.id to appropriate later
-              const newContent = response.data;
+              const newContent = response.id;
 
-              console.log("response:");
+              console.log("id:");
               console.log(newContent);
               // Write new content to file
               fs.writeFileSync(file.filename, newContent, 'utf8');
 
-              updatedFiles.push({ path: file.filename, explanation: data.explanation });
+              updatedFiles.push({ path: file.filename, explanation: newContent });
             }
 
             console.log(updatedFiles);
