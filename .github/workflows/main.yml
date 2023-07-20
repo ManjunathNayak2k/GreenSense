@@ -35,6 +35,8 @@ jobs:
               // Read file contents
               const fileContent = fs.readFileSync(file.filename, 'utf8');
               
+              console.log("file content");
+              console.log(fileContent);
               // Use the built-in fetch function
               const response = await github.request({
                 url: 'https://dummyjson.com/products/add',
@@ -42,7 +44,8 @@ jobs:
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
               });
-              console.log(response.data)
+              console.log("response:");
+              console.log(response.data);
             }
       # - name: Commit and Push
       #   run: |
