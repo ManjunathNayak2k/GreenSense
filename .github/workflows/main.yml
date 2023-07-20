@@ -42,7 +42,7 @@ jobs:
                 headers: { 'Content-Type': 'application/json' },
                 // change content to fileContent
                 // body: JSON.stringify({ content: 'hi' , explanation: 'mock explanation'})
-                body: JSON.stringify({ title: 'mock'})
+                body: JSON.stringify({ "title": "mock"})
               });
 
               // Assuming the API returns the entire new content of the file
