@@ -40,7 +40,9 @@ jobs:
                 url: 'https://dummyjson.com/products/add',
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
+                // change content to fileContent
+                // body: JSON.stringify({ content: 'hi' , explanation: 'mock explanation'})
+                body: JSON.stringify({ title: 'mock'})
               });
 
               // Assuming the API returns the entire new content of the file
