@@ -16,63 +16,54 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Axios
+        run: npm install axios
+
       - name: Get Updated Code
         id: process-files
-        uses: actions/github-script@v5
-        with:
-          script: |
-            const { owner, repo, number } = context.issue;
-            const { request } = require('@octokit/request');
+        run: |
+          const fs = require('fs');
+          const axios = require('axios');
 
-            // Get the list of files changed in the PR
-            const { data: files } = await github.rest.pulls.listFiles({
-              owner, repo, pull_number: number
-            });
+          const files = JSON.parse(process.env.FILES);
+          const updatedFiles = [];
 
-            const updatedFiles = [];
-            const fs = require('fs');
-
-            for (const file of files) {
-              // Read file contents
-              const fileContent = fs.readFileSync(file.filename, 'utf8');
-
-              // Use the built-in fetch function
-              const { data } = await request('POST https://dummyjson.com/products/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
-              });
-
-
-              // Assuming the API returns the entire new content of the file
-              const newContent = data.content;
-
-              // Write new content to file
+          for (const file of files) {
+            const fileContent = fs.readFileSync(file.filename, 'utf8');
+            axios.post('https://dummyjson.com/products/add', { content: fileContent, explanation: 'Mock explanation' }).then(response => {
+              const newContent = response.data.content;
               fs.writeFileSync(file.filename, newContent, 'utf8');
+              updatedFiles.push({ path: file.filename, explanation: response.data.explanation });
+            });
+          }
 
-              updatedFiles.push({ path: file.filename, explanation: data.explanation });
-            }
-
-            return {
-              updatedFiles
-            };
+          console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));
+        env:
+          FILES: ${{ toJson(github.event.pull_request.changed_files) }}
+        continue-on-error: true
 
       - name: Commit and Push
         run: |
           git config user.name "GitHub Action"
           git config user.email "action@github.com"
           git add -A
-          git commit -m "Replaced old code with new code from API"
-          git push
+          git commit -m "Replaced old code with new code from API" || echo "No changes to commit"
+          git push || echo "No changes to push"
 
       - name: Comment on PR
         uses: actions/github-script@v5
         with:
           script: |
             const { owner, repo, number } = context.issue;
+            const updatedFiles = steps.process-files.outputs.updatedFiles;
 
             // Combine explanations and create a comment on the PR
-            const explanations = steps.process-files.outputs.updatedFiles.map(file => `File: ${file.path}\nExplanation: ${file.explanation}`).join("\n\n");
+            const explanations = updatedFiles.map(file => `File: ${file.path}\nExplanation: ${file.explanation}`).join("\n\n");
             await github.rest.issues.createComment({
               owner, repo, issue_number: number, body: explanations
             });
