@@ -21,27 +21,36 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const octokit = github;
             const { owner, repo, number } = context.issue;
 
             // Get the list of files changed in the PR
-            const { data: files } = await octokit.rest.pulls.listFiles({
+            const { data: files } = await github.pulls.listFiles({
               owner, repo, pull_number: number
             });
 
             const updatedFiles = [];
+            const fs = require('fs');
 
             for (const file of files) {
-              const response = await axios.post('https://dummyjson.com/products/add', { path: file.filename });
+              // Read file contents
+              const fileContent = fs.readFileSync(file.filename, 'utf8');
+
+              // Use the built-in fetch function
+              const response = await fetch('https://dummyjson.com/products/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
+              });
+
+              const data = await response.json();
 
               // Assuming the API returns the entire new content of the file
-              const newContent = response.data.newCode;
-              
+              const newContent = data.content;
+
               // Write new content to file
-              const fs = require('fs');
               fs.writeFileSync(file.filename, newContent, 'utf8');
 
-              updatedFiles.push({ path: file.filename, explanation: response.data.explanation });
+              updatedFiles.push({ path: file.filename, explanation: data.explanation });
             }
 
             return {
@@ -60,11 +69,10 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const octokit = github;
             const { owner, repo, number } = context.issue;
-            
+
             // Combine explanations and create a comment on the PR
             const explanations = steps.process-files.outputs.updatedFiles.map(file => `File: ${file.path}\nExplanation: ${file.explanation}`).join("\n\n");
-            await octokit.rest.issues.createComment({
+            await github.issues.createComment({
               owner, repo, issue_number: number, body: explanations
             });
