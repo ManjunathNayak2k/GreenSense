@@ -25,7 +25,7 @@ jobs:
             const { owner, repo, number } = context.issue;
 
             // Get the list of files changed in the PR
-            const { data: files } = await octokit.pulls.listFiles({
+            const { data: files } = await octokit.rest.pulls.listFiles({
               owner, repo, pull_number: number
             });
 
@@ -65,6 +65,6 @@ jobs:
             
             // Combine explanations and create a comment on the PR
             const explanations = steps.process-files.outputs.updatedFiles.map(file => `File: ${file.path}\nExplanation: ${file.explanation}`).join("\n\n");
-            await octokit.issues.createComment({
+            await octokit.rest.issues.createComment({
               owner, repo, issue_number: number, body: explanations
             });
