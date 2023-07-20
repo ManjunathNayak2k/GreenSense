@@ -49,7 +49,7 @@ jobs:
               });
               // Assuming the API returns the entire new content of the file
               // change response.data.id to appropriate later
-              const newContent = response.id;
+              const newContent = response;
 
               console.log("id:");
               console.log(newContent);
