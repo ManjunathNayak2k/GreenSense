@@ -42,11 +42,10 @@ jobs:
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
               });
-              console.log(typeof response.data)
 
               // Assuming the API returns the entire new content of the file
-              // change data.id to appropriate later
-              const newContent = data.id;
+              // change response.data.id to appropriate later
+              const newContent = response.data.id;
 
               console.log("response:");
               console.log(newContent);
