@@ -36,13 +36,13 @@ jobs:
               const fileContent = fs.readFileSync(file.filename, 'utf8');
               
               // Use the built-in fetch function
-              const response = github.request({
+              const response = await github.request({
                 url: 'https://dummyjson.com/products/add',
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
               });
-              const data = await response.json();
+              const data = response.json();
 
               // Assuming the API returns the entire new content of the file
               // change data.id to appropriate later
