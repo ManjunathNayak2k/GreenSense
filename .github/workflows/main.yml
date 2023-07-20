@@ -28,8 +28,15 @@ jobs:
               owner, repo, pull_number: number
             });
 
-            console.log(files);
+            const updatedFiles = [];
+            const fs = require('fs');
 
+            for (const file of files) {
+              // Read file contents
+              const fileContent = fs.readFileSync(file.filename, 'utf8');
+              console.log('content ')
+              console.log(fileContent)
+            }
       # - name: Commit and Push
       #   run: |
       #     git config user.name "GitHub Action"
