@@ -45,7 +45,7 @@ jobs:
                 body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
               });
               console.log("response:");
-              console.log(response.data);
+              console.log(response.body);
             }
       # - name: Commit and Push
       #   run: |
