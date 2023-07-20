@@ -36,7 +36,8 @@ jobs:
               const fileContent = fs.readFileSync(file.filename, 'utf8');
               
               // Use the built-in fetch function
-              const response = github.request('https://dummyjson.com/products/add', {
+              const response = await github.request({
+                url: 'https://dummyjson.com/products/add',
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
