@@ -28,37 +28,7 @@ jobs:
               owner, repo, pull_number: number
             });
 
-            const updatedFiles = [];
-            const fs = require('fs');
-
-            for (const file of files) {
-              // Read file contents
-              const fileContent = fs.readFileSync(file.filename, 'utf8');
-
-              // Use the built-in fetch function
-              const response = await fetch('https://dummyjson.com/products/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
-              });
-
-              const data = await response.json();
-
-              // Assuming the API returns the entire new content of the file
-              const newContent = data.content;
-
-              // Write new content to file
-              fs.writeFileSync(file.filename, newContent, 'utf8');
-
-              updatedFiles.push({ path: file.filename, explanation: data.explanation });
-            }
-
             console.log(files);
-            console.log(updatedFiles);
-
-            //return {
-            //  updatedFiles
-            //};
 
       # - name: Commit and Push
       #   run: |
