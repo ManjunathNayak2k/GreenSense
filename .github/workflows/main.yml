@@ -34,8 +34,14 @@ jobs:
             for (const file of files) {
               // Read file contents
               const fileContent = fs.readFileSync(file.filename, 'utf8');
-              console.log('content ')
-              console.log(fileContent)
+              
+              // Use the built-in fetch function
+              const response = github.request('https://dummyjson.com/products/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
+              });
+              console.log(response)
             }
       # - name: Commit and Push
       #   run: |
