@@ -36,17 +36,34 @@ jobs:
               const fileContent = fs.readFileSync(file.filename, 'utf8');
               
               // Use the built-in fetch function
-              const response = await github.request({
+              const response = github.request({
                 url: 'https://dummyjson.com/products/add',
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: fileContent , explanation: 'mock explanation'})
               });
+              const data = await response.json();
+
+              // Assuming the API returns the entire new content of the file
+              // change data.id to appropriate later
+              const newContent = data.id;
+
               console.log("response:");
-              console.log(response.body);
+              console.log(newContent);
+              // Write new content to file
+              fs.writeFileSync(file.filename, newContent, 'utf8');
+
+              updatedFiles.push({ path: file.filename, explanation: data.explanation });
             }
-      # - name: Commit and Push
-      #   run: |
+
+            console.log(updatedFiles);
+
+            return {
+              updatedFiles
+            };
+      - name: Commit and Push
+        run: |
+            git status
       #     git config user.name "GitHub Action"
       #     git config user.email "action@github.com"
       #     git add -A
