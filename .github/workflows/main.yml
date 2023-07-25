@@ -63,6 +63,7 @@ jobs:
               updatedFiles.push({ path: file.filename, explanation: newContent });
             }
 
+            console.log(updatedFiles)
             return {
               updatedFiles
             };
