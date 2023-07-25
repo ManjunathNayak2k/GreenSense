@@ -107,9 +107,6 @@ jobs:
                 body: "This PR contains optimised code."
             });
 
-            console.log('before var')
-            console.log(updatedFiles)
-            console.log('after var')
             console.log('before env')
             console.log(${{ steps.process-files.outputs.updatedFiles }})
             console.log('after env')
