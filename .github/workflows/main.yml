@@ -107,6 +107,9 @@ jobs:
                 body: "This PR contains optimised code."
             });
 
+            console.log('before')
+            console.log(${{ steps.process-files.outputs.updatedFiles }})
+            console.log('after')
             const updatedFiles = JSON.parse(`${{ steps.process-files.outputs.updatedFiles }}`);
 
             // Combine explanations and create a comment on the new PR
