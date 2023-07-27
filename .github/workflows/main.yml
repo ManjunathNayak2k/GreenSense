@@ -23,7 +23,7 @@ jobs:
           script: |
             let apiKey = process.env.OPENAI_API_KEY
             console.log('api key')
-            console.log(`Bearer ${key}`)
+            console.log(`Bearer ${apiKey}`)
             console.log('----------')
             const { owner, repo, number } = context.issue;
 
