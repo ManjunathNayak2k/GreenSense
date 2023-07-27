@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install jq
+        run: sudo apt-get install jq
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -121,7 +124,7 @@ jobs:
             
             console.log(updatedFiles)
             console.log('-----')
-            console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));        
+            console.log("::set-output name=updatedFiles::" + encodeURIComponent(JSON.stringify(updatedFiles)));
       
       # - name: Commit and Push to New Branch
       #   run: |
@@ -156,7 +159,7 @@ jobs:
             console.log(${{ steps.process-files.outputs.updatedFiles }})
             console.log('------------')
 
-            const updatedFiles = JSON.parse(`${{ steps.process-files.outputs.updatedFiles }}`);
+            updatedFiles=$(echo "${{ steps.process-files.outputs.updatedFiles }}" | jq -r @uri)
             console.log(updatedFiles)
             // Combine explanations and create a comment on the new PR
             const explanations = updatedFiles.map(file => `File: ${file.path}\nExplanation: ${file.explanation}`).join("\n\n");
