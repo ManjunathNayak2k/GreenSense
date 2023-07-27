@@ -23,8 +23,7 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            console.log('logging key')
-            console.log(${process.env.OPENAI_API_KEY})
+            console.log('logging key ${process.env.OPENAI_API_KEY}')
             const { owner, repo, number } = context.issue;
 
             // Get the list of files changed in the PR
