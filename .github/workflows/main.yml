@@ -81,7 +81,9 @@ jobs:
 
                   const response = JSON.parse(responseBody);
                   const chatResponse = response.choices[0].message.content;
-
+                  console.log(response)
+                  console.log('---------------')
+                  console.log(chatResponse)
                   const code_regex = /\[CODE_START\]([\s\S]*?)\[CODE_END\]/;
                   const explanation_regex = /\[EXPLANATION_START\]([\s\S]*?)\[EXPLANATION_END\]/;
 
