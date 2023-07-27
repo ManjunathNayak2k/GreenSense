@@ -89,7 +89,7 @@ jobs:
         
                 try {
                     const response = await makeOpenAIRequest(fileContent);
-                            
+
                     // GPT response
                     const chatResponse = response.choices[0].message.content;
         
@@ -118,7 +118,9 @@ jobs:
                     console.error("Error with OpenAI request:", error);
                 }
             }
-        
+            
+            console.log(updatedFiles)
+            console.log('-----')
             console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));        
       
       # - name: Commit and Push to New Branch
