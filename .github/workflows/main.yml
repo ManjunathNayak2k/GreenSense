@@ -21,9 +21,11 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            let apiKey = process.env.OPENAI_API_KEY
+            let apiKey = ${{ secrets.OPENAI_API_KEY }}
+            let lengthy = apiKey.length
             console.log('api key')
-            console.log(`Bearer length ${apiKey.length}`)
+            console.log(`Bearer ${apiKey}`)
+            console.log(`length is ${lengthy}`)
             console.log('----------')
             const { owner, repo, number } = context.issue;
 
@@ -101,7 +103,6 @@ jobs:
             
             console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));
             env:
-              OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
               FILES: ${{ toJson(github.event.pull_request.changed_files) }}
       
       # - name: Commit and Push to New Branch
