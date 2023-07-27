@@ -111,7 +111,6 @@ jobs:
         
                     if (explanationMatch && explanationMatch[1]) {
                         explanation = explanationMatch[1];
-                        console.log(explanation)
                     } 
         
                     // Write new content to file
@@ -123,7 +122,7 @@ jobs:
                 }
             }
 
-            console.log("::set-output name=updatedFiles::" + encodeURIComponent(JSON.stringify(updatedFiles)));
+            console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));
       
       # - name: Commit and Push to New Branch
       #   run: |
@@ -155,7 +154,7 @@ jobs:
             const sourceBranch = context.payload.pull_request.head.ref; 
             const optimisedBranch = `optimised-${sourceBranch}`;
 
-            updatedFiles=$(echo "${{ steps.process-files.outputs.updatedFiles }}" | jq -r @uri)
+            updatedFiles=JSON.parse(${{ steps.process-files.outputs.updatedFiles }})
             console.log(updatedFiles)
             // Combine explanations and create a comment on the new PR
             const explanations = updatedFiles.map(file => `File: ${file.path}\nExplanation: ${file.explanation}`).join("\n\n");
