@@ -78,7 +78,7 @@ jobs:
 
                 res.on('end', () => {
                   // GPT response
-              
+                  console.log(response);
                   const response = JSON.parse(responseBody);
                   const chatResponse = response.data.choices[0].message.content;
 
