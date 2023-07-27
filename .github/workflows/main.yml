@@ -23,13 +23,6 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            if (process.env.OPENAI_API_KEY) {
-              console.log("API Key is set.");
-            } else {
-              console.log("API Key is NOT set.");
-            }
-            console.log('Bearer' + process.env.OPENAI_API_KEY)
-
             const { owner, repo, number } = context.issue;
 
             // Get the list of files changed in the PR
