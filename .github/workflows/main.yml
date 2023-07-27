@@ -73,12 +73,14 @@ jobs:
                 let responseBody = '';
 
                 res.on('data', chunk => {
+                  console.log(chunk);
                   responseBody += chunk;
                 });
 
                 res.on('end', () => {
                   // GPT response
-                  console.log(response);
+                  console.log('-------------------------')
+                  console.log(responseBody);
                   const response = JSON.parse(responseBody);
                   const chatResponse = response.data.choices[0].message.content;
 
