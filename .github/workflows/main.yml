@@ -24,7 +24,8 @@ jobs:
         with:
           script: |
             let apiKey = process.env.OPENAI_API_KEY
-            let lengthy = apiKey.length
+            let bearer = 'Bearer ${apiKey}'
+            let lengthy = bearer.length
             console.log('api key')
             console.log(`Bearer ${apiKey}`)
             console.log(`length is ${lengthy}`)
