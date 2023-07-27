@@ -24,12 +24,9 @@ jobs:
         with:
           script: |
             let apiKey = process.env.OPENAI_API_KEY
-            let bearer = `Bearer ${apiKey}`
-            let lengthy = bearer.length
-            console.log('api key')
-            console.log(`Bearer ${apiKey}`)
-            console.log(`length is ${lengthy}`)
-            console.log('----------')
+            let bearerToken = `Bearer ${apiKey}`
+            console.log('length : ' + bearerToken.length)
+
             const { owner, repo, number } = context.issue;
 
             // Get the list of files changed in the PR
@@ -50,7 +47,7 @@ jobs:
                 method: 'POST',
                 headers: { 
                           'Content-Type': 'application/json', 
-                          'Authorization': `Bearer ${apiKey}`
+                          'Authorization': bearerToken
                           },
                 body: JSON.stringify({
                         "model": "gpt-3.5-turbo",
