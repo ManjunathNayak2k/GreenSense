@@ -17,13 +17,14 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Get Updated Code
-        env: 
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} 
         id: process-files
         uses: actions/github-script@v5
         with:
           script: |
-            const apiKey = process.env.OPENAI_API_KEY;
+            let key = ${{secrets.OPENAI_API_KEY}}
+            console.log('api key')
+            console.log(`Bearer ${key}`)
+            console.log('----------')
             const { owner, repo, number } = context.issue;
 
             // Get the list of files changed in the PR
@@ -44,7 +45,7 @@ jobs:
                 method: 'POST',
                 headers: { 
                           'Content-Type': 'application/json', 
-                          'Authorization': `Bearer ${apiKey}`
+                          'Authorization': `Bearer ${{ secrets.OPENAI_API_KEY}}`
                           },
                 body: JSON.stringify({
                         "model": "gpt-3.5-turbo",
