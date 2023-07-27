@@ -23,9 +23,12 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            console.log('log before')
-            console.log(`Bearer ${process.env.OPENAI_API_KEY}`)
-            console.log('log after')
+            if (process.env.OPENAI_API_KEY) {
+              console.log("API Key is set.");
+            } else {
+              console.log("API Key is NOT set.");
+            }
+            console.log('Bearer' + process.env.OPENAI_API_KEY)
 
             const { owner, repo, number } = context.issue;
 
@@ -45,7 +48,7 @@ jobs:
               const response = await github.request({
                 url: 'https://api.openai.com/v1/chat/completions',
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY },
                 body: JSON.stringify({
                         "model": "gpt-3.5-turbo",
                         "temperature": "0.1",
