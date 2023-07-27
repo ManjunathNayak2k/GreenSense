@@ -25,7 +25,7 @@ jobs:
           script: |
             let apiKey = process.env.OPENAI_API_KEY
             let bearerToken = `Bearer ${apiKey}`
-            let headers: { 
+            let headers = { 
               'Content-Type': 'application/json', 
               'Authorization': bearerToken
               }
