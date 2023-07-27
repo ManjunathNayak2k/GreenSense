@@ -25,7 +25,11 @@ jobs:
           script: |
             let apiKey = process.env.OPENAI_API_KEY
             let bearerToken = `Bearer ${apiKey}`
-            console.log('length : ' + bearerToken.length)
+            let headers: { 
+              'Content-Type': 'application/json', 
+              'Authorization': bearerToken
+              }
+            console.log(headers)
 
             const { owner, repo, number } = context.issue;
 
