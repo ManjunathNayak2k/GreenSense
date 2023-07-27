@@ -73,16 +73,14 @@ jobs:
                 let responseBody = '';
 
                 res.on('data', chunk => {
-                  console.log(chunk);
                   responseBody += chunk;
                 });
 
                 res.on('end', () => {
                   // GPT response
-                  console.log('-------------------------')
-                  console.log(responseBody);
+
                   const response = JSON.parse(responseBody);
-                  const chatResponse = response.data.choices[0].message.content;
+                  const chatResponse = response.choices[0].message.content;
 
                   const code_regex = /\[CODE_START\]([\s\S]*?)\[CODE_END\]/;
                   const explanation_regex = /\[EXPLANATION_START\]([\s\S]*?)\[EXPLANATION_END\]/;
