@@ -21,7 +21,7 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            let key = ${{secrets.OPENAI_API_KEY }}
+            let apiKey = process.env.OPENAI_API_KEY
             console.log('api key')
             console.log(`Bearer ${key}`)
             console.log('----------')
@@ -45,7 +45,7 @@ jobs:
                 method: 'POST',
                 headers: { 
                           'Content-Type': 'application/json', 
-                          'Authorization': `Bearer ${{ secrets.OPENAI_API_KEY }}`
+                          'Authorization': `Bearer ${apiKey}`
                           },
                 body: JSON.stringify({
                         "model": "gpt-3.5-turbo",
@@ -101,6 +101,7 @@ jobs:
             
             console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));
             env:
+              OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
               FILES: ${{ toJson(github.event.pull_request.changed_files) }}
       
       # - name: Commit and Push to New Branch
