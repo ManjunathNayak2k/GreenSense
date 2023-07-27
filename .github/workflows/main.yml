@@ -156,9 +156,6 @@ jobs:
             const sourceBranch = context.payload.pull_request.head.ref; 
             const optimisedBranch = `optimised-${sourceBranch}`;
 
-            console.log(${{ steps.process-files.outputs.updatedFiles }})
-            console.log('------------')
-
             updatedFiles=$(echo "${{ steps.process-files.outputs.updatedFiles }}" | jq -r @uri)
             console.log(updatedFiles)
             // Combine explanations and create a comment on the new PR
