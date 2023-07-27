@@ -19,6 +19,8 @@ jobs:
       - name: Get Updated Code
         id: process-files
         uses: actions/github-script@v5
+        env:
+          OPENAI_API_KEY : ${{ secrets.OPENAI_API_KEY }}
         with:
           script: |
             let apiKey = process.env.OPENAI_API_KEY
@@ -104,8 +106,6 @@ jobs:
             console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));
             env:
               FILES: ${{ toJson(github.event.pull_request.changed_files) }}
-          env:
-            OPENAI_API_KEY = ${{ secrets.OPENAI_API_KEY }}
       
       # - name: Commit and Push to New Branch
       #   run: |
