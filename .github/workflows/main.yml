@@ -52,7 +52,7 @@ jobs:
                         },
                         {
                           "role": "user",
-                          "content": f"Optimize this code: " + fileContent
+                          "content": "Optimize this code: " + fileContent
                         }
                       )
               });
