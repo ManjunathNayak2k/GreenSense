@@ -122,7 +122,6 @@ jobs:
                 }
             }
 
-            const core = require('@actions/core');
             core.exportVariable('updatedFiles', updatedFiles);
 
       # - name: Commit and Push to New Branch
