@@ -122,6 +122,7 @@ jobs:
                 }
             }
 
+            console.log(JSON.stringify(updatedFiles))
             console.log("::set-output name=updatedFiles::" + JSON.stringify(updatedFiles));
       
       # - name: Commit and Push to New Branch
