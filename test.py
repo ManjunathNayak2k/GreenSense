@@ -1,15 +1,10 @@
 
 def create_large_list():
-    large_list = []
-    for i in range(1000000):
-        large_list.append(i)
+    large_list = list(range(1000000))
     return large_list
 
 def factorial(n):
-    if n == 0:
-        return 1
-    else:
-        return n * factorial(n-1)
+    return 1 if n == 0 else n * factorial(n-1)
 
 def give_output(n):
     if n <= 1:
