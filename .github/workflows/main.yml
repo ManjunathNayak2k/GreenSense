@@ -193,7 +193,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: prNumber,  
-                commit_id: pr.data.head.sha,  
+                commit_id: context.sha,  
                 event: "COMMENT",  
                 comments: comments
             });
