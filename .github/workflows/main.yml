@@ -171,8 +171,7 @@ jobs:
             console.log(updatedFiles)
             core.exportVariable('updatedFiles', updatedFiles);
 
-      
-      - name: Commit and Push to New Branch
+      - name: Commit and Push to New Branch to New Branch
         run: |
             # Extract the source branch name
             SOURCE_BRANCH=$GITHUB_HEAD_REF
@@ -207,28 +206,51 @@ jobs:
             // Combine explanations and create a comment on the new PR
             const explanations = updatedFiles.map(file => `File: ${file.path}\nExplanation: ${file.explanation}`).join("\n\n");
 
-            // Create a PR
-            const pr = await github.rest.pulls.create({
+            // Check if a PR already exists for the branch
+            const existingPRs = await github.rest.pulls.list({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: `GreenSense optimisations for ${sourceBranch}`,
-                head: optimisedBranch, // "optimised-testbranch"
-                base: sourceBranch, // "testbranch"
-                body: explanations
+                head: `${context.repo.owner}:${optimisedBranch}`
             });
 
-            const comments = updatedFiles.map(file => ({
-                path: file.path,
-                position: 1,  // This needs to be the line number where you want the comment
-                body: file.explanation
-            }));
-
+            let prNumber = null
+            // If no PRs found for the branch, create one
+            if (existingPRs.data.length === 0) {
+              // Create a PR
+              pr = await github.rest.pulls.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `GreenSense optimisations for ${sourceBranch}`,
+                  head: optimisedBranch, // "optimised-testbranch"
+                  base: sourceBranch, // "testbranch"
+                  body: explanations
+              });
+              prNumber = pr.data.number
+            }
+            else {
+              prNumber = existingPRs.data[0].number;
+            }
+          
+            // Flatten the data structure to get a list of files with their corresponding line numbers and explanations
+            const flattenedComments = [];
+            
+            for (let filepath in updatedFiles) {
+                let functions = updatedFiles[filepath];
+                for (let func in functions) {
+                    let data = functions[func];
+                    flattenedComments.push({
+                        path: filepath,
+                        position: data[0], // This is the line number
+                        body: data[1]     // This is the explanation
+                    });
+                }
+            }
+            
             // Create review comments for each file
             await github.rest.pulls.createReview({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: prNumber,  
-                commit_id: context.sha,  
                 event: "COMMENT",  
                 comments: flattenedComments
             });
