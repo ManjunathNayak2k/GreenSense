@@ -16,6 +16,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      
+      - name: Install GitHub CLI
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y gh
+
+      - name: Check and delete existing PR and branch
+        run: |
+            # Assuming source-branch is available as an environment variable or you can define it
+            PR_EXIST=$(gh pr list --base ${{ github.head_ref }} --head Green-${{ github.head_ref }} --json number -q '.[0].number')
+            if [ "$PR_EXIST" != "" ]; then
+                gh pr close $PR_EXIST
+                git push origin --delete Green-${{ github.head_ref }}
+            fi
+
       - name: Get Updated Code
         env: 
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} 
