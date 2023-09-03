@@ -30,6 +30,8 @@ jobs:
                 gh pr close $PR_EXIST
                 git push origin --delete Green-${{ github.head_ref }}
             fi
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get Updated Code
         env: 
