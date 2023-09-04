@@ -1,19 +1,16 @@
 
+import numpy as np
+
 def multiply_matrices(a, b):
-    rowA, colA = len(a), len(a[0])
-    rowB, colB = len(b), len(b[0])
+    a = np.array(a)
+    b = np.array(b)
     
-    if colA != rowB:
+    if a.shape[1] != b.shape[0]:
         print("Incompatible matrices.")
         return
 
-    result = [[0 for _ in range(colB)] for _ in range(rowA)]
-
-    for i in range(rowA):
-        for j in range(colB):
-            for k in range(colA): # or, we could use rowB
-                result[i][j] += a[i][k] * b[k][j]
-    return result
+    result = np.dot(a, b)
+    return result.tolist()
 
 def is_prime(n):
     if n <= 1 or (n % 2 == 0 and n > 2): 
