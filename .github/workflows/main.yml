@@ -275,9 +275,9 @@ jobs:
             additionalComments += 'The star ratings can be classified as:\n';
             additionalComments += '| Star Rating       | Explanation |\n';
             additionalComments += '|-------------------|-------------|\n';
-            additionalComments += `| ${replaceStarsWithImages(⭐⭐⭐⭐★)}           | Excellent   |\n`;
-            additionalComments += `| ${replaceStarsWithImages(⭐⭐⭐★)} and above   | Good        |\n`;
-            additionalComments += `| ${replaceStarsWithImages(⭐⭐★)} and above    | Needs work  |\n`;
+            additionalComments += `| ${replaceStarsWithImages("⭐⭐⭐⭐★")}           | Excellent   |\n`;
+            additionalComments += `| ${replaceStarsWithImages("⭐⭐⭐★")} and above   | Good        |\n`;
+            additionalComments += `| ${replaceStarsWithImages("⭐⭐★")} and above    | Needs work  |\n`;
 
             commentBody += additionalComments
             console.log(`comment body : \n ${commentBody}`)
