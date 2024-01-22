@@ -1,4 +1,3 @@
-
 def create_large_list():
     large_list = []
     for i in range(1000000):
