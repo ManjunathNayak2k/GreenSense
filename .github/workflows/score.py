@@ -121,10 +121,6 @@ def get_score_for_code(fun):
 
     for res in resp:
         code = resp[res]
-        print(f'time complexity {code["time_complexity"]}')
-        print(f'space_complexity {code["space_complexity"]}')
-        print(f'space complexity {code["cyclo_complexity"]}')
-
         score = convert_complexity_to_number(
             code["time_complexity"])+convert_complexity_to_number(code["space_complexity"])+code["cyclo_complexity"]
         resp[res]["score"] = score
