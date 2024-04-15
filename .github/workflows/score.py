@@ -2,7 +2,7 @@ import os
 import json
 
 import re
-import openai
+from openai import OpenAI
 import math
 
 from radon.complexity import cc_visit
@@ -10,7 +10,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 N = 10
-openai.api_key = os.environ["OPENAI_API_KEY"]
+
+client = OpenAI()
 
 env_file = os.getenv("updatedFiles")
 old_and_new_code = json.loads(env_file)
@@ -18,7 +19,7 @@ print("ENV:", old_and_new_code)
 
 
 def call_Chat_gpt_for_time_and_space_complexity(content):
-    chat_response = openai.ChatCompletion.create(
+    chat_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {
