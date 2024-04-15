@@ -24,7 +24,7 @@ def call_Chat_gpt_for_time_and_space_complexity(content):
         messages=[
             {
               "role": "system",
-              "content": "You will be provided with Python code, give only Time complexity and Space Complexity all functions in json fomat with no explation"
+              "content": "You will be provided with Python code, give only Time complexity and Space Complexity all functions in strictly json format with no explation. keys for time complexity: time_complexity and space complexity: space_complexity"
             },
             {
                 "role": "user",
@@ -111,6 +111,7 @@ def get_score_for_code(fun):
 
     print("Calling ChatGPT API to Get Complexities")
     resp = call_Chat_gpt_for_time_and_space_complexity(fun)
+    print(f'openai response: {resp}')
     resp = json.loads(resp)
 
     print("Getting Cyclomatic Complexity")
