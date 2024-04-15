@@ -36,7 +36,7 @@ def call_Chat_gpt_for_time_and_space_complexity(content):
         frequency_penalty=0.0,
         presence_penalty=0.0
     )
-    return chat_response['choices'][0]['message']['content']
+    return chat_response.choices[0].message.content
 
 
 def get_cyclomitic_complexity(fun):
