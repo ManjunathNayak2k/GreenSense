@@ -90,33 +90,30 @@ jobs:
                     };
         
                     const options = {
-                        hostname: 'api.openai.com',
-                        path: '/v1/chat/completions',
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
-                            'Content-Length': Buffer.byteLength(JSON.stringify(requestData))
-                        }
-                    };
-        
+                    hostname: 'api.openai.com',
+                    path: '/v1/chat/completions',
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(JSON.stringify(data))
+                    }
+                };
+
+                return new Promise((resolve, reject) => {
                     const req = https.request(options, res => {
-                        let responseBody = '';
-        
-                        res.on('data', chunk => {
-                            responseBody += chunk;
-                        });
-        
+                        let body = '';
+                        res.on('data', chunk => { body += chunk; });
                         res.on('end', () => {
-                            resolve(JSON.parse(responseBody));
+                            if (res.statusCode === 200) {
+                                resolve(JSON.parse(body));
+                            } else {
+                                reject(new Error(`API returned status code ${res.statusCode}: ${body}`));
+                            }
                         });
                     });
-        
-                    req.on('error', error => {
-                        reject(error);
-                    });
-        
-                    req.write(JSON.stringify(requestData));
+                    req.on('error', error => reject(error));
+                    req.write(JSON.stringify(data));
                     req.end();
                 });
             }
@@ -406,117 +403,107 @@ jobs:
           script: |
             const https = require('https');
             
-            prNumber=process.env.prNumber
-            repoName=context.repo.repo
-            repoOwner=context.repo.owner
+            // Retrieve the PR number from the environment variable
+            const prNumber = process.env.prNumber;
+            const repoName = context.repo.repo;
+            const repoOwner = context.repo.owner;
 
+            // Function to get the PR diff
             async function getPRDiff(prNumber) {
                 return new Promise((resolve, reject) => {
-                    const token = process.env.GITHUB_TOKEN;
                     const options = {
                         hostname: 'patch-diff.githubusercontent.com',
                         path: `/raw/${repoOwner}/${repoName}/pull/${prNumber}.diff`,
                         method: 'GET',
                         headers: {
                             'User-Agent': 'NodeJS',
-                            'Authorization': `token ${token}`,
+                            'Authorization': `token ${process.env.GITHUB_TOKEN}`,
                             'Accept': 'application/vnd.github.v3.raw'
                         }
                     };
-        
+
                     const req = https.request(options, res => {
                         let responseBody = '';
-        
-                        res.on('data', chunk => {
-                            responseBody += chunk;
-                        });
-        
+                        res.on('data', chunk => { responseBody += chunk; });
                         res.on('end', () => {
-                            resolve(responseBody);
+                            if (res.statusCode === 200) {
+                                resolve(responseBody);
+                            } else {
+                                reject(new Error(`Failed to retrieve PR diff, status code: ${res.statusCode}`));
+                            }
                         });
-                    });
-        
-                    req.on('error', error => {
-                        reject(error);
                     });
 
+                    req.on('error', error => reject(error));
                     req.end();
                 });
             }
-            const prDiff = await getPRDiff(prNumber);
 
+            // Function to parse diff and get line numbers for functions
             function getFunctionLineNumber(diff) {
                 const lines = diff.split('\n');
                 let currentFile = null;
                 let currentOriginalLine = null;
                 let result = {};
 
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-                    
-                    // Check if the line is the start of a new file diff
+                lines.forEach(line => {
                     if (line.startsWith('diff --git')) {
                         const pathMatch = line.match(/b\/(\S+)/);
                         if (pathMatch) {
                             currentFile = pathMatch[1];
                             result[currentFile] = {};
                         }
-                        continue;
-                    }
-
-                    if (line.startsWith('@@')) {
-                        const lineNumMatch = line.match(/-(\d+),\d+/);
+                    } else if (line.startsWith('@@')) {
+                        const lineNumMatch = line.match(/\-(\d+),\d+ \+(\d+),\d+/);
                         if (lineNumMatch) {
                             currentOriginalLine = parseInt(lineNumMatch[1]);
                         }
-                        continue;
-                    } 
-                    // Check for function definition and save the line number
-                    const funcMatch = line.match(/def (\w+)\(/);
-                    if (funcMatch && currentFile && !line.startsWith('+')) {
-                        const funcName = funcMatch[1];
-                        result[currentFile][funcName] = currentOriginalLine;
+                    } else if (line.match(/^[\-\+]/) && currentFile) {
+                        const funcMatch = line.match(/^\+\s*def (\w+)\(/);
+                        if (funcMatch) {
+                            const funcName = funcMatch[1];
+                            result[currentFile][funcName] = currentOriginalLine;
+                        }
+                        if (line.startsWith('-')) {
+                            currentOriginalLine++;
+                        }
                     }
-
-                    currentOriginalLine++;
-
-                }
+                });
                 return result;
             }
+
+            const prDiff = await getPRDiff(prNumber);
             const parsedDiff = getFunctionLineNumber(prDiff);
-            console.log(`parsedDiff : ${parsedDiff}`)
 
-            const explanationsArray=JSON.parse(process.env.explanationsArray);
-            console.log(`explanationsArray : ${explanationsArray}`)
+            const explanationsArray = JSON.parse(process.env.explanationsArray);
 
-            let comments = [];
-
-            explanationsArray.forEach(item => {
+            // Collect comments for the review
+            let comments = explanationsArray.reduce((acc, item) => {
                 const filePath = item.path;
-                if (parsedDiff[filePath]) {
-                    item.explanation.forEach(explanation => {
+                item.explanation.forEach(explanation => {
                     const functionName = Object.keys(explanation)[0];
                     const message = explanation[functionName];
-                    const position = parsedDiff[filePath][functionName];
-                    console.log("explanetion",explanation)
-                    if (position !== undefined) {
-                        comments.push({
-                        path: filePath,
-                        position: position,
-                        body: message
+                    const position = parsedDiff[filePath] && parsedDiff[filePath][functionName];
+                    if (position) {
+                        acc.push({
+                            path: filePath,
+                            position: position,
+                            body: message
                         });
                     }
-                    });
-                }
-            });
+                });
+                return acc;
+            }, []);
 
-            console.log(comments);
-            
             // Create review comments for each file
-            await github.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,  
-                event: "COMMENT",  
-                comments: comments
-            });
+            if (comments.length > 0) {
+              await github.rest.pulls.createReview({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,  
+                  event: "COMMENT",  
+                  comments
+              });
+            } else {
+              console.log("No comments to add.");
+            }
