@@ -46,7 +46,7 @@ jobs:
             const { owner, repo, number } = context.issue;
         
             const prompt = `
-            Your task is to optimize the provided code. Improve its speed and time complexity. Improve its algorithmic efficiency. Some optimizations may include dynamic programming, connection pooling, inbuilt functions, parallel processing. DO NOT CHANGE THE FUNCTION NAMES. Only update existing functions and don't create new functions. The response should strictly follow this structure:
+            Your task is to optimize the provided code. Improve its speed and time complexity. Improve its algorithmic efficiency. Some optimizations may include dynamic programming, connection pooling, inbuilt functions, parallel processing. Don't change the function names. Only update existing functions and don't create new functions. The response should strictly follow this structure:
 
             First, begin with the string [CODE_START], followed by the optimized code, and then [CODE_END]. After that, begin with [EXPLANATION_START]. For each function you've optimized, start the explanation with the function name followed by its description of optimization. Please make sure each function's explanation is on a new line. Do not include the time complexities of the original or optimized code in the explanation section. Conclude with [EXPLANATION_END].
             
@@ -75,7 +75,7 @@ jobs:
             async function makeOpenAIRequest(fileContent) {
                 return new Promise((resolve, reject) => {
                     const requestData = {
-                        model: "gpt-4",
+                        model: "gpt-3.5-turbo",
                         temperature: 0.1,
                         messages: [
                             {
@@ -90,30 +90,33 @@ jobs:
                     };
         
                     const options = {
-                    hostname: 'api.openai.com',
-                    path: '/v1/chat/completions',
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Content-Length': Buffer.byteLength(JSON.stringify(data))
-                    }
-                };
-
-                return new Promise((resolve, reject) => {
+                        hostname: 'api.openai.com',
+                        path: '/v1/chat/completions',
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY,
+                            'Content-Length': Buffer.byteLength(JSON.stringify(requestData))
+                        }
+                    };
+        
                     const req = https.request(options, res => {
-                        let body = '';
-                        res.on('data', chunk => { body += chunk; });
+                        let responseBody = '';
+        
+                        res.on('data', chunk => {
+                            responseBody += chunk;
+                        });
+        
                         res.on('end', () => {
-                            if (res.statusCode === 200) {
-                                resolve(JSON.parse(body));
-                            } else {
-                                reject(new Error(`API returned status code ${res.statusCode}: ${body}`));
-                            }
+                            resolve(JSON.parse(responseBody));
                         });
                     });
-                    req.on('error', error => reject(error));
-                    req.write(JSON.stringify(data));
+        
+                    req.on('error', error => {
+                        reject(error);
+                    });
+        
+                    req.write(JSON.stringify(requestData));
                     req.end();
                 });
             }
@@ -403,107 +406,117 @@ jobs:
           script: |
             const https = require('https');
             
-            // Retrieve the PR number from the environment variable
-            const prNumber = process.env.prNumber;
-            const repoName = context.repo.repo;
-            const repoOwner = context.repo.owner;
+            prNumber=process.env.prNumber
+            repoName=context.repo.repo
+            repoOwner=context.repo.owner
 
-            // Function to get the PR diff
             async function getPRDiff(prNumber) {
                 return new Promise((resolve, reject) => {
+                    const token = process.env.GITHUB_TOKEN;
                     const options = {
                         hostname: 'patch-diff.githubusercontent.com',
                         path: `/raw/${repoOwner}/${repoName}/pull/${prNumber}.diff`,
                         method: 'GET',
                         headers: {
                             'User-Agent': 'NodeJS',
-                            'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+                            'Authorization': `token ${token}`,
                             'Accept': 'application/vnd.github.v3.raw'
                         }
                     };
-
+        
                     const req = https.request(options, res => {
                         let responseBody = '';
-                        res.on('data', chunk => { responseBody += chunk; });
+        
+                        res.on('data', chunk => {
+                            responseBody += chunk;
+                        });
+        
                         res.on('end', () => {
-                            if (res.statusCode === 200) {
-                                resolve(responseBody);
-                            } else {
-                                reject(new Error(`Failed to retrieve PR diff, status code: ${res.statusCode}`));
-                            }
+                            resolve(responseBody);
                         });
                     });
+        
+                    req.on('error', error => {
+                        reject(error);
+                    });
 
-                    req.on('error', error => reject(error));
                     req.end();
                 });
             }
+            const prDiff = await getPRDiff(prNumber);
 
-            // Function to parse diff and get line numbers for functions
             function getFunctionLineNumber(diff) {
                 const lines = diff.split('\n');
                 let currentFile = null;
                 let currentOriginalLine = null;
                 let result = {};
 
-                lines.forEach(line => {
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    
+                    // Check if the line is the start of a new file diff
                     if (line.startsWith('diff --git')) {
                         const pathMatch = line.match(/b\/(\S+)/);
                         if (pathMatch) {
                             currentFile = pathMatch[1];
                             result[currentFile] = {};
                         }
-                    } else if (line.startsWith('@@')) {
-                        const lineNumMatch = line.match(/\-(\d+),\d+ \+(\d+),\d+/);
+                        continue;
+                    }
+
+                    if (line.startsWith('@@')) {
+                        const lineNumMatch = line.match(/-(\d+),\d+/);
                         if (lineNumMatch) {
                             currentOriginalLine = parseInt(lineNumMatch[1]);
                         }
-                    } else if (line.match(/^[\-\+]/) && currentFile) {
-                        const funcMatch = line.match(/^\+\s*def (\w+)\(/);
-                        if (funcMatch) {
-                            const funcName = funcMatch[1];
-                            result[currentFile][funcName] = currentOriginalLine;
-                        }
-                        if (line.startsWith('-')) {
-                            currentOriginalLine++;
-                        }
+                        continue;
+                    } 
+                    // Check for function definition and save the line number
+                    const funcMatch = line.match(/def (\w+)\(/);
+                    if (funcMatch && currentFile && !line.startsWith('+')) {
+                        const funcName = funcMatch[1];
+                        result[currentFile][funcName] = currentOriginalLine;
                     }
-                });
+
+                    currentOriginalLine++;
+
+                }
                 return result;
             }
-
-            const prDiff = await getPRDiff(prNumber);
             const parsedDiff = getFunctionLineNumber(prDiff);
+            console.log(`parsedDiff : ${parsedDiff}`)
 
-            const explanationsArray = JSON.parse(process.env.explanationsArray);
+            const explanationsArray=JSON.parse(process.env.explanationsArray);
+            console.log(`explanationsArray : ${explanationsArray}`)
 
-            // Collect comments for the review
-            let comments = explanationsArray.reduce((acc, item) => {
+            let comments = [];
+
+            explanationsArray.forEach(item => {
                 const filePath = item.path;
-                item.explanation.forEach(explanation => {
+                if (parsedDiff[filePath]) {
+                    item.explanation.forEach(explanation => {
                     const functionName = Object.keys(explanation)[0];
                     const message = explanation[functionName];
-                    const position = parsedDiff[filePath] && parsedDiff[filePath][functionName];
-                    if (position) {
-                        acc.push({
-                            path: filePath,
-                            position: position,
-                            body: message
+                    const position = parsedDiff[filePath][functionName];
+                    console.log("explanetion",explanation)
+                    if (position !== undefined) {
+                        comments.push({
+                        path: filePath,
+                        position: position,
+                        body: message
                         });
                     }
-                });
-                return acc;
-            }, []);
+                    });
+                }
+            });
 
+            console.log(comments);
+            
             // Create review comments for each file
-            if (comments.length > 0) {
-              await github.rest.pulls.createReview({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: prNumber,  
-                  event: "COMMENT",  
-                  comments
-              });
-            } else {
-              console.log("No comments to add.");
-            }
+            await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,  
+                event: "COMMENT",  
+                comments: comments
+            });
